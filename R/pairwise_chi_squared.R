@@ -1,20 +1,23 @@
-
-################################################################################
-################################################################################
-
-### pairwise chi-squared function ###
-#
-# performs pairwise chi-squared tests between samples (i.e. columns)
-# comparisons can be provided as a list of sample pairs, ...
-# ... or all comparisons can be performed (default)
-#
-# alpha level must be set, default is 0.05
-#
-# adjustment method can be set to ...
-# ... "Bonferroni" (default, most conservative), ...
-# ... "BH" (less conservative, better for large numbers of comparisons), ...
-# ... or "none" (not recommended)
-#
+#' Pairwise Chi-squared test
+#'
+#' @param data A data frame with samples as columns and bins as rows.
+#' @param comparisons A list containing the comparisons to perform, in the format c("Sample1", "Sample2"). Default is "all", which performs all pairwise comparisons.
+#' @param alpha Significance level (default 0.05).
+#' @param adjust Multiple testing correction method. Must be one of "Bonferroni" (default), "BH" or "none" (not recommended).
+#'
+#' @return A data frame with one row per comparison, containing the output of the Chi-squared test.
+#' @export
+#'
+#' @examples
+#' example_data <- data.frame(Sample1 = c(10,20,30),
+#'                            Sample2 = c(10,12,38),
+#'                            Sample3 = c(10,22,28))
+#' pairwise_chi_squared(data = example_data,
+#'                      comparisons = list(c("Sample1", "Sample2"),
+#'                                         c("Sample1", "Sample3")),
+#'                      alpha = 0.05,
+#'                      adjust = "Bonferroni")
+#'
 pairwise_chi_squared <- function(data,
                                  comparisons = "all",
                                  alpha = 0.05,
@@ -103,8 +106,3 @@ pairwise_chi_squared <- function(data,
   ### output data frame returned
   output
 }
-
-
-
-################################################################################
-################################################################################
