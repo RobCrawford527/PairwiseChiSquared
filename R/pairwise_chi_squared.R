@@ -4,8 +4,6 @@
 
 ### pairwise chi-squared function ###
 #
-# YOU SHOULD ONLY PROCEED TO PAIRWISE TESTS IF OVERALL CHI-SQUARED IS SIGNIFICANT
-#
 # performs pairwise chi-squared tests between samples (i.e. columns)
 # comparisons can be provided as a list of sample pairs, ...
 # ... or all comparisons can be performed (default)
@@ -20,13 +18,14 @@
 pairwise_chi_squared <- function(data,
                                  comparisons = "all",
                                  alpha = 0.05,
-                                 adjust = "Bonferroni"){
-  ### required packages loaded
-  # load dplyr package
-  library(dplyr)
+                                 adjust = c("Bonferroni", "BH", "none")){
 
   ### parameters checked
-  # adjust has only three allowed values
+  # set to Bonferroni if no value specified
+  # check adjust has one of the three allowed values
+  if (adjust == c("Bonferroni", "BH", "none")){
+    adjust <- adjust[1]
+  }
   if (!adjust %in% c("none","BH","Bonferroni")){
     stop("'adjust' must be one of 'none', 'BH' or 'Bonferroni'")
   }
@@ -63,7 +62,7 @@ pairwise_chi_squared <- function(data,
   # appropriate values written into output data frame
   for (i in comparisons){
     data_i <- data[,i]
-    chi_i <- chisq.test(data_i)
+    chi_i <- stats::chisq.test(data_i)
     output_i <- data.frame(comparison = paste(i[1],"vs",i[2],sep="_"),
                            sample1 = i[1],
                            sample2 = i[2],
@@ -77,16 +76,16 @@ pairwise_chi_squared <- function(data,
   ### p-values corrected
   # p-values ranked (smallest to largest)
   output <- output[order(output[,"p_value"], decreasing = FALSE),]
-  output <- mutate(output, rank = 1:length(comparisons))
+  output <- dplyr::mutate(output, rank = 1:length(comparisons))
   # critical value determined for each comparison
   # significance determined by comparing p-values to respective critical values
   # values differ depending on adjustment method
   if (adjust == "Bonferroni"){
-    output <- mutate(output, critical_val = alpha / length(comparisons))
+    output <- dplyr::mutate(output, critical_val = alpha / length(comparisons))
   } else if (adjust == "BH"){
-    output <- mutate(output, critical_val = rank / max(rank) * alpha)
+    output <- dplyr::mutate(output, critical_val = rank / max(rank) * alpha)
   } else if (adjust == "none"){
-    output <- mutate(output, critical_val = alpha)
+    output <- dplyr::mutate(output, critical_val = alpha)
   }
   # p-values compared to critical values
   # TRUE = statistically significant at chosen alpha level
@@ -94,12 +93,12 @@ pairwise_chi_squared <- function(data,
   # ... than the lowest-ranked significant comparison are  ...
   # ... all deemed to be TRUE (note this is only relevant  ...
   # ... for BH correction, but it is also true for the others)
-  output <- mutate(output, significant = case_when(is.na(p_value) ~ NA,
-                                                   p_value >= critical_val ~ FALSE,
-                                                   p_value < critical_val ~ TRUE))
-  output <- mutate(output, significant = case_when(is.na(significant) ~ NA,
-                                                   rank > max(output[output[,"significant"]==TRUE,"rank"], na.rm = TRUE) ~ FALSE,
-                                                   TRUE ~ TRUE))
+  output <- dplyr::mutate(output, significant = dplyr::case_when(is.na(p_value) ~ NA,
+                                                                 p_value >= critical_val ~ FALSE,
+                                                                 p_value < critical_val ~ TRUE))
+  output <- dplyr::mutate(output, significant = dplyr::case_when(is.na(significant) ~ NA,
+                                                                 rank > max(output[output[,"significant"]==TRUE,"rank"], na.rm = TRUE) ~ FALSE,
+                                                                 TRUE ~ TRUE))
 
   ### output data frame returned
   output

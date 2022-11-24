@@ -13,15 +13,12 @@
 #
 chi_squared <- function(data,
                         alpha = 0.05){
-  ### required packages loaded
-  # load dplyr package
-  library(dplyr)
 
   ### chi-squared test performed
   # chi-squared test performed
   # output data frame created
   # appropriate values written into output data frame
-  chi <- chisq.test(data)
+  chi <- stats::chisq.test(data)
   output <- data.frame(comparison = "overall",
                        sample1 = NA,
                        sample2 = NA,
@@ -34,8 +31,8 @@ chi_squared <- function(data,
 
   ### outcome of test determined
   # significance determined by comparing p-value to critical value
-  output <- mutate(output, significant = case_when(p_value >= critical_val ~ FALSE,
-                                                   TRUE ~ TRUE))
+  output <- dplyr::mutate(output, significant = dplyr::case_when(p_value >= critical_val ~ FALSE,
+                                                                 TRUE ~ TRUE))
 
   ### output data frame returned
   output
