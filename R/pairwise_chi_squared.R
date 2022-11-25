@@ -21,12 +21,11 @@
 pairwise_chi_squared <- function(data,
                                  comparisons = "all",
                                  alpha = 0.05,
-                                 adjust = c("Bonferroni", "BH", "none")){
+                                 adjust = "Bonferroni"){
 
   ### parameters checked
-  # set to Bonferroni if no value specified
   # check adjust has one of the three allowed values
-  if (adjust == c("Bonferroni", "BH", "none")){
+  if (length(adjust) > 1){
     adjust <- adjust[1]
   }
   if (!adjust %in% c("none","BH","Bonferroni")){
