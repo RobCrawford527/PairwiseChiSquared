@@ -23,24 +23,12 @@ start of the first line to install `devtools`.
 ``` r
 # install.packages("devtools", dependencies = TRUE)
 devtools::install_github("RobCrawford527/PairwiseChiSquared", dependencies = TRUE)
-#> Downloading GitHub repo RobCrawford527/PairwiseChiSquared@HEAD
-#> 
-#>          checking for file 'C:\Users\mqbpqrc6\AppData\Local\Temp\RtmpQV5noF\remotes16c812e07aa8\RobCrawford527-PairwiseChiSquared-19186b3/DESCRIPTION' ...  ✔  checking for file 'C:\Users\mqbpqrc6\AppData\Local\Temp\RtmpQV5noF\remotes16c812e07aa8\RobCrawford527-PairwiseChiSquared-19186b3/DESCRIPTION' (372ms)
-#>       ─  preparing 'PairwiseChiSquared':
-#>    checking DESCRIPTION meta-information ...     checking DESCRIPTION meta-information ...   ✔  checking DESCRIPTION meta-information
-#>       ─  checking for LF line-endings in source and make files and shell scripts
-#>   ─  checking for empty or unneeded directories
-#>       ─  building 'PairwiseChiSquared_0.0.0.9000.tar.gz'
-#>      
-#> 
-#> Installing package into 'C:/Users/mqbpqrc6/AppData/Local/Temp/Rtmpm0KSWk/temp_libpath38941ac01d12'
-#> (as 'lib' is unspecified)
 ```
 
 The `dependencies = TRUE` argument ensures that other packages that are
 required for proteomicshelpers to work correctly are installed too.
 
-## Data preparation
+## Data Preparation
 
 To use the chi-squared test your data must be categorical - i.e. they
 are counts of values in a number of non-overlapping, mutually exclusive
@@ -64,26 +52,114 @@ than a separate column. Once imported, the data frame should look
 similar to the example below:
 
 ``` r
-example_data <- data.frame(Sample1 = c(10,20,30),
-                           Sample2 = c(10,12,38),
-                           Sample3 = c(10,22,28),
+example_data <- data.frame(Sample1 = c(20,20,40),
+                           Sample2 = c(10,12,58),
+                           Sample3 = c(18,26,32),
+                           Sample4 = c(16,24,30),
                            row.names = c("A", "B", "C"))
 example_data
-#>   Sample1 Sample2 Sample3
-#> A      10      10      10
-#> B      20      12      22
-#> C      30      38      28
+#>   Sample1 Sample2 Sample3 Sample4
+#> A      20      10      18      16
+#> B      20      12      26      24
+#> C      40      58      32      30
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
+## Chi-Squared Test
 
-You can also embed plots, for example:
+Use the `chi_squared()` function to test whether there are *any*
+differences in the distribution of counts across the bins between your
+samples. It is a modified version of the built-in `chisq.test()`
+function that reports the result of the test in a comparable way to
+`pairwise_chi_squared()`.
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
+`chi-squared()` has only two parameters: `data` is the data frame
+containing the data you wish to test, and `alpha` is the desired
+significance level (0.05 by default)t.
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+``` r
+# perform overall chi-squared test
+overall_result <- PairwiseChiSquared::chi_squared(data = example_data,
+                                                  alpha = 0.05)
+overall_result
+#>   comparison sample1 sample2   chi_sq df     p_value rank critical_val
+#> 1    overall      NA      NA 20.05487  6 0.002707801   NA         0.05
+#>   significant
+#> 1        TRUE
+```
+
+If - and only if - the result of this test is significant should you
+progress to perform pairwise chi-squared tests. Otherwise you should
+stop, as there are no statistically significant differences between your
+samples.
+
+## Pairwise Chi-Squared Test
+
+Having found that the distribution of counts differs significantly
+between your samples, you can determine *exactly which samples differ*
+using `pairwise_chi_squared()`. Again this function is a wrapper for
+`chisq.test()`, which selects pairs of samples for testing in turn and
+reports the results in a table that matches the one from
+`chi_squared()`. Once all of the tests have been performed, the results
+can be corrected for multiple testing using either the Bonferroni
+(default) or BH method.
+
+`pairwise_chi_squared()` takes the same two parameters as
+`chi_squared()`: `data` and `alpha`. It takes an additional two
+parameters: `comparisons`, which specifies which pairwise tests to
+perform, and `adjust`, which specifies how to perform multiple testing
+correction.
+
+By default, `comparisons` is set to “all”, meaning that all of the
+pairwise comparisons will be evaluated.
+
+``` r
+# perform pairwise chi-squared tests for all comparisons
+# Bonferroni method used for multiple testing correction
+pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
+                                                            comparisons = "all",
+                                                            alpha = 0.05,
+                                                            adjust = "Bonferroni")
+pairwise_result
+#>           comparison sample1 sample2      chi_sq df      p_value rank
+#> 4 Sample2_vs_Sample3 Sample2 Sample3 14.86192719  2 0.0005926162    1
+#> 5 Sample2_vs_Sample4 Sample2 Sample4 13.68787463  2 0.0010658984    2
+#> 1 Sample1_vs_Sample2 Sample1 Sample2  8.63945578  2 0.0133035031    3
+#> 2 Sample1_vs_Sample3 Sample1 Sample3  1.67529809  2 0.4327266505    4
+#> 3 Sample1_vs_Sample4 Sample1 Sample4  1.57699443  2 0.4545273382    5
+#> 6 Sample3_vs_Sample4 Sample3 Sample4  0.01561422  2 0.9922232884    6
+#>   critical_val significant
+#> 4  0.008333333        TRUE
+#> 5  0.008333333        TRUE
+#> 1  0.008333333       FALSE
+#> 2  0.008333333       FALSE
+#> 3  0.008333333       FALSE
+#> 6  0.008333333       FALSE
+```
+
+You may prefer to specify a subset of tests to perform. For example, if
+you have an unstressed sample and multiple stress conditions, you may
+want to compare each stress against the unstressed. To specify
+comparisons, each should be in the format `c("Sample1", "Sample2")`.
+Multiple comparisons can be joined together by using `list()`.
+
+``` r
+# define comparisons to perform 
+comparisons_of_interest <- list(c("Sample1", "Sample2"),
+                                c("Sample1", "Sample3"),
+                                c("Sample1", "Sample4"))
+
+# use comparisons list for pairwise chi-squared tests
+pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
+                                                            comparisons = comparisons_of_interest,
+                                                            alpha = 0.05,
+                                                            adjust = "Bonferroni")
+pairwise_result
+#>           comparison sample1 sample2   chi_sq df   p_value rank critical_val
+#> 1 Sample1_vs_Sample2 Sample1 Sample2 8.639456  2 0.0133035    1   0.01666667
+#> 2 Sample1_vs_Sample3 Sample1 Sample3 1.675298  2 0.4327267    2   0.01666667
+#> 3 Sample1_vs_Sample4 Sample1 Sample4 1.576994  2 0.4545273    3   0.01666667
+#>   significant
+#> 1        TRUE
+#> 2       FALSE
+#> 3       FALSE
+```
