@@ -80,12 +80,11 @@ significance level (0.05 by default)t.
 # perform overall chi-squared test
 overall_result <- PairwiseChiSquared::chi_squared(data = example_data,
                                                   alpha = 0.05)
-print(overall_result[,c("chi_sq",
-                        "p_value",
-                        "critical_val",
-                        "significant")])
-#>     chi_sq     p_value critical_val significant
-#> 1 20.05487 0.002707801         0.05        TRUE
+overall_result
+#>   comparison sample1 sample2   chi_sq df     p_value rank critical_val
+#> 1    overall      NA      NA 20.05487  6 0.002707801   NA         0.05
+#>   significant
+#> 1        TRUE
 ```
 
 If - and only if - the result of this test is significant should you
@@ -120,17 +119,21 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = "all",
                                                             alpha = 0.05,
                                                             adjust = "Bonferroni")
-print(pairwise_result[,c("chi_sq",
-                         "p_value",
-                         "critical_val",
-                         "significant")])
-#>        chi_sq      p_value critical_val significant
-#> 4 14.86192719 0.0005926162  0.008333333        TRUE
-#> 5 13.68787463 0.0010658984  0.008333333        TRUE
-#> 1  8.63945578 0.0133035031  0.008333333       FALSE
-#> 2  1.67529809 0.4327266505  0.008333333       FALSE
-#> 3  1.57699443 0.4545273382  0.008333333       FALSE
-#> 6  0.01561422 0.9922232884  0.008333333       FALSE
+pairwise_result
+#>           comparison sample1 sample2      chi_sq df      p_value rank
+#> 4 Sample2_vs_Sample3 Sample2 Sample3 14.86192719  2 0.0005926162    1
+#> 5 Sample2_vs_Sample4 Sample2 Sample4 13.68787463  2 0.0010658984    2
+#> 1 Sample1_vs_Sample2 Sample1 Sample2  8.63945578  2 0.0133035031    3
+#> 2 Sample1_vs_Sample3 Sample1 Sample3  1.67529809  2 0.4327266505    4
+#> 3 Sample1_vs_Sample4 Sample1 Sample4  1.57699443  2 0.4545273382    5
+#> 6 Sample3_vs_Sample4 Sample3 Sample4  0.01561422  2 0.9922232884    6
+#>   critical_val significant
+#> 4  0.008333333        TRUE
+#> 5  0.008333333        TRUE
+#> 1  0.008333333       FALSE
+#> 2  0.008333333       FALSE
+#> 3  0.008333333       FALSE
+#> 6  0.008333333       FALSE
 ```
 
 You may prefer to specify a subset of tests to perform. For example, if
@@ -150,14 +153,15 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = comparisons_of_interest,
                                                             alpha = 0.05,
                                                             adjust = "Bonferroni")
-print(pairwise_result[,c("chi_sq",
-                         "p_value",
-                         "critical_val",
-                         "significant")])
-#>     chi_sq   p_value critical_val significant
-#> 1 8.639456 0.0133035   0.01666667        TRUE
-#> 2 1.675298 0.4327267   0.01666667       FALSE
-#> 3 1.576994 0.4545273   0.01666667       FALSE
+pairwise_result
+#>           comparison sample1 sample2   chi_sq df   p_value rank critical_val
+#> 1 Sample1_vs_Sample2 Sample1 Sample2 8.639456  2 0.0133035    1   0.01666667
+#> 2 Sample1_vs_Sample3 Sample1 Sample3 1.675298  2 0.4327267    2   0.01666667
+#> 3 Sample1_vs_Sample4 Sample1 Sample4 1.576994  2 0.4545273    3   0.01666667
+#>   significant
+#> 1        TRUE
+#> 2       FALSE
+#> 3       FALSE
 ```
 
 The multiple testing correction method is set to “Bonferroni” by
@@ -183,15 +187,19 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = "all",
                                                             alpha = 0.05,
                                                             adjust = "BH")
-print(pairwise_result[,c("chi_sq", 
-                         "p_value",
-                         "critical_val",
-                         "significant")])
-#>        chi_sq      p_value critical_val significant
-#> 4 14.86192719 0.0005926162  0.008333333        TRUE
-#> 5 13.68787463 0.0010658984  0.016666667        TRUE
-#> 1  8.63945578 0.0133035031  0.025000000        TRUE
-#> 2  1.67529809 0.4327266505  0.033333333       FALSE
-#> 3  1.57699443 0.4545273382  0.041666667       FALSE
-#> 6  0.01561422 0.9922232884  0.050000000       FALSE
+pairwise_result
+#>           comparison sample1 sample2      chi_sq df      p_value rank
+#> 4 Sample2_vs_Sample3 Sample2 Sample3 14.86192719  2 0.0005926162    1
+#> 5 Sample2_vs_Sample4 Sample2 Sample4 13.68787463  2 0.0010658984    2
+#> 1 Sample1_vs_Sample2 Sample1 Sample2  8.63945578  2 0.0133035031    3
+#> 2 Sample1_vs_Sample3 Sample1 Sample3  1.67529809  2 0.4327266505    4
+#> 3 Sample1_vs_Sample4 Sample1 Sample4  1.57699443  2 0.4545273382    5
+#> 6 Sample3_vs_Sample4 Sample3 Sample4  0.01561422  2 0.9922232884    6
+#>   critical_val significant
+#> 4  0.008333333        TRUE
+#> 5  0.016666667        TRUE
+#> 1  0.025000000        TRUE
+#> 2  0.033333333       FALSE
+#> 3  0.041666667       FALSE
+#> 6  0.050000000       FALSE
 ```

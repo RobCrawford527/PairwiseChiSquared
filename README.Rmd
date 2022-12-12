@@ -60,10 +60,7 @@ Use the `chi_squared()` function to test whether there are *any* differences in 
 # perform overall chi-squared test
 overall_result <- PairwiseChiSquared::chi_squared(data = example_data,
                                                   alpha = 0.05)
-print(overall_result[,c("chi_sq",
-                        "p_value",
-                        "critical_val",
-                        "significant")])
+overall_result
 ```
 
 If - and only if - the result of this test is significant should you progress to perform pairwise chi-squared tests. Otherwise you should stop, as there are no statistically significant differences between your samples.
@@ -83,10 +80,7 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = "all",
                                                             alpha = 0.05,
                                                             adjust = "Bonferroni")
-print(pairwise_result[,c("chi_sq",
-                         "p_value",
-                         "critical_val",
-                         "significant")])
+pairwise_result
 ```
 
 You may prefer to specify a subset of tests to perform. For example, if you have an unstressed sample and multiple stress conditions, you may want to compare each stress against the unstressed. To specify comparisons, each should be in the format `c("Sample1", "Sample2")`. Multiple comparisons can be joined together by using `list()`.
@@ -102,10 +96,7 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = comparisons_of_interest,
                                                             alpha = 0.05,
                                                             adjust = "Bonferroni")
-print(pairwise_result[,c("chi_sq",
-                         "p_value",
-                         "critical_val",
-                         "significant")])
+pairwise_result
 ```
 
 The multiple testing correction method is set to "Bonferroni" by default, but can alternatively be changed to "BH" or to "none" (which is not recommended!). Multiple testing correction changes the critical value against which the p-values are compared; in this case the p-values themselves *are not adjusted* but the value they are compared with is changed. If the p-value for a test is *smaller* than its respective p-value, the result is considered *significant*.
@@ -118,8 +109,5 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
                                                             comparisons = "all",
                                                             alpha = 0.05,
                                                             adjust = "BH")
-print(pairwise_result[,c("chi_sq", 
-                         "p_value",
-                         "critical_val",
-                         "significant")])
+pairwise_result
 ```
