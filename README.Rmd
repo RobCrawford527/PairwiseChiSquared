@@ -67,7 +67,7 @@ If - and only if - the result of this test is significant should you progress to
 
 ## Pairwise Chi-Squared Test
 
-Having found that the distribution of counts differs significantly between your samples, you can determine *exactly which samples differ* using `pairwise_chi_squared()`. Again this function is a wrapper for `chisq.test()`, which selects pairs of samples for testing in turn and reports the results in a table that matches the one from `chi_squared()`. Once all of the tests have been performed, the results can be corrected for multiple testing using either the Bonferroni (default) or BH method.
+Having found that the distribution of counts differs significantly between your samples, you can determine *exactly which samples differ* using `pairwise_chi_squared()`. Again this function is a wrapper for `chisq.test()`, which selects pairs of samples for testing in turn and reports the results in a table that matches the one from `chi_squared()`. Once all of the tests have been performed, the results can be corrected for multiple testing using either the Bonferroni or BH method.
 
 `pairwise_chi_squared()` takes the same two parameters as `chi_squared()`: `data` and `alpha`. It takes an additional two parameters: `comparisons`, which specifies which pairwise tests to perform, and `adjust`, which specifies how to perform multiple testing correction.
 
@@ -99,11 +99,15 @@ pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
 pairwise_result
 ```
 
+The multiple testing correction method is set to "Bonferroni" by default, but can alternatively be changed to "BH" or to "none" (which is not recommended!). Multiple testing correction changes the critical value against which the p-values are compared; in this case the p-values themselves *are not adjusted* but the value they are compared with is changed. If the p-value for a test is *smaller* than its respective p-value, the result is considered *significant*.
+The Bonferroni method divides the alpha value by the number of tests performed to define the critical value for all of the tests.
+The BH method ranks the p-values from smallest to largest and uses this to calculate the critical value for each test. The critical value is defined as: `alpha * (rank / total number of tests)`. The test with the highest p-value that is considered significant is then identified, and a final correction is made to ensure that all the tests with smaller p-values are also considered significant (even if some of these p-values are *larger* than their respective critical values).
 
-
-
-
-
-
-
-
+``` {r}
+# use BH correction for pairwise tests
+pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
+                                                            comparisons = "all",
+                                                            alpha = 0.05,
+                                                            adjust = "BH")
+pairwise_result
+```

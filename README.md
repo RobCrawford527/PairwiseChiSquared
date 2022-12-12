@@ -100,8 +100,8 @@ using `pairwise_chi_squared()`. Again this function is a wrapper for
 `chisq.test()`, which selects pairs of samples for testing in turn and
 reports the results in a table that matches the one from
 `chi_squared()`. Once all of the tests have been performed, the results
-can be corrected for multiple testing using either the Bonferroni
-(default) or BH method.
+can be corrected for multiple testing using either the Bonferroni or BH
+method.
 
 `pairwise_chi_squared()` takes the same two parameters as
 `chi_squared()`: `data` and `alpha`. It takes an additional two
@@ -162,4 +162,44 @@ pairwise_result
 #> 1        TRUE
 #> 2       FALSE
 #> 3       FALSE
+```
+
+The multiple testing correction method is set to “Bonferroni” by
+default, but can alternatively be changed to “BH” or to “none” (which is
+not recommended!). Multiple testing correction changes the critical
+value against which the p-values are compared; in this case the p-values
+themselves *are not adjusted* but the value they are compared with is
+changed. If the p-value for a test is *smaller* than its respective
+p-value, the result is considered *significant*. The Bonferroni method
+divides the alpha value by the number of tests performed to define the
+critical value for all of the tests. The BH method ranks the p-values
+from smallest to largest and uses this to calculate the critical value
+for each test. The critical value is defined as:
+`alpha * (rank / total number of tests)`. The test with the highest
+p-value that is considered significant is then identified, and a final
+correction is made to ensure that all the tests with smaller p-values
+are also considered significant (even if some of these p-values are
+*larger* than their respective critical values).
+
+``` r
+# use BH correction for pairwise tests
+pairwise_result <- PairwiseChiSquared::pairwise_chi_squared(data = example_data,
+                                                            comparisons = "all",
+                                                            alpha = 0.05,
+                                                            adjust = "BH")
+pairwise_result
+#>           comparison sample1 sample2      chi_sq df      p_value rank
+#> 4 Sample2_vs_Sample3 Sample2 Sample3 14.86192719  2 0.0005926162    1
+#> 5 Sample2_vs_Sample4 Sample2 Sample4 13.68787463  2 0.0010658984    2
+#> 1 Sample1_vs_Sample2 Sample1 Sample2  8.63945578  2 0.0133035031    3
+#> 2 Sample1_vs_Sample3 Sample1 Sample3  1.67529809  2 0.4327266505    4
+#> 3 Sample1_vs_Sample4 Sample1 Sample4  1.57699443  2 0.4545273382    5
+#> 6 Sample3_vs_Sample4 Sample3 Sample4  0.01561422  2 0.9922232884    6
+#>   critical_val significant
+#> 4  0.008333333        TRUE
+#> 5  0.016666667        TRUE
+#> 1  0.025000000        TRUE
+#> 2  0.033333333       FALSE
+#> 3  0.041666667       FALSE
+#> 6  0.050000000       FALSE
 ```
