@@ -24,13 +24,12 @@ chi_squared <- function(data,
                        sample2 = NA,
                        chi_sq = chi[["statistic"]],
                        df = chi[["parameter"]],
-                       p_value = chi[["p.value"]],
-                       rank = NA,
-                       critical_val = alpha)
+                       pval = chi[["p.value"]],
+                       adj_pval = chi[["p.value"]])
   rownames(output) <- NULL
 
   # significance determined by comparing p-value to critical value
-  output <- dplyr::mutate(output, significant = dplyr::case_when(p_value >= critical_val ~ FALSE,
+  output <- dplyr::mutate(output, significant = dplyr::case_when(adj_pval >= alpha ~ FALSE,
                                                                  TRUE ~ TRUE))
 
   # output data frame returned
