@@ -28,7 +28,7 @@ pairwise_chi_squared <- function(data,
   if (length(method) > 1){
     method <- method[1]
   }
-  if (!method %in% p.adjust.methods)){
+  if (!method %in% p.adjust.methods){
     stop("'method' must be one of 'p.adjust.methods'")
   }
   # create comparison list if comparisons = 'all'
@@ -74,11 +74,11 @@ pairwise_chi_squared <- function(data,
   output <- dplyr::mutate(output,
                           adj_pval = stats::p.adjust(output$pval,
                                                      method = method))
-  # p-values compared to critical values
-  # TRUE = statistically significant at chosen alpha level
-  output <- dplyr::mutate(output, significant = dplyr::case_when(is.na(adj_pval) ~ NA,
-                                                                 adj_pval >= alpha ~ FALSE,
-                                                                 adj_pval < alpha ~ TRUE))
+  # p-values compared to alpha value
+  output <- dplyr::mutate(output,
+                          significant = dplyr::case_when(is.na(adj_pval) ~ NA,
+                                                         adj_pval >= alpha ~ FALSE,
+                                                         adj_pval < alpha ~ TRUE))
 
   ### output data frame returned
   output
